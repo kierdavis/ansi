@@ -3,6 +3,7 @@ package ansi
 import (
 	"fmt"
 	"io"
+	"sync"
 )
 
 func init() {
@@ -15,6 +16,9 @@ func init() {
 		<-make(chan struct{})
 	}()
 }
+
+var Mutex sync.Mutex
+var UseMutex bool
 
 type Color uint
 
@@ -72,10 +76,20 @@ func SAttrOn(attr Attribute) (s string) {
 }
 
 func FAttrOn(w io.Writer, attr Attribute) (n int, err error) {
+	if UseMutex {
+		Mutex.Lock()
+		defer Mutex.Unlock()
+	}
+
 	return fmt.Fprint(w, SAttrOn(attr))
 }
 
 func AttrOn(attr Attribute) (n int, err error) {
+	if UseMutex {
+		Mutex.Lock()
+		defer Mutex.Unlock()
+	}
+
 	return fmt.Print(SAttrOn(attr))
 }
 
@@ -108,119 +122,21 @@ func SAttrOff(attr Attribute) (s string) {
 }
 
 func FAttrOff(w io.Writer, attr Attribute) (n int, err error) {
+	if UseMutex {
+		Mutex.Lock()
+		defer Mutex.Unlock()
+	}
+
 	return fmt.Fprint(w, SAttrOff(attr))
 }
 
 func AttrOff(attr Attribute) (n int, err error) {
+	if UseMutex {
+		Mutex.Lock()
+		defer Mutex.Unlock()
+	}
+
 	return fmt.Print(SAttrOff(attr))
-}
-
-func Print(attr Attribute, a ...interface{}) (n int, err error) {
-	x, err := AttrOn(attr)
-	n += x
-	if err != nil {
-		return n, err
-	}
-
-	x, err = fmt.Print(a...)
-	n += x
-	if err != nil {
-		return n, err
-	}
-
-	x, err = AttrOff(attr)
-	n += x
-	return n, err
-}
-
-func Println(attr Attribute, a ...interface{}) (n int, err error) {
-	x, err := AttrOn(attr)
-	n += x
-	if err != nil {
-		return n, err
-	}
-
-	x, err = fmt.Println(a...)
-	n += x
-	if err != nil {
-		return n, err
-	}
-
-	x, err = AttrOff(attr)
-	n += x
-	return n, err
-}
-
-func Printf(attr Attribute, format string, a ...interface{}) (n int, err error) {
-	x, err := AttrOn(attr)
-	n += x
-	if err != nil {
-		return n, err
-	}
-
-	x, err = fmt.Printf(format, a...)
-	n += x
-	if err != nil {
-		return n, err
-	}
-
-	x, err = AttrOff(attr)
-	n += x
-	return n, err
-}
-
-func Fprint(w io.Writer, attr Attribute, a ...interface{}) (n int, err error) {
-	x, err := FAttrOn(w, attr)
-	n += x
-	if err != nil {
-		return n, err
-	}
-
-	x, err = fmt.Fprint(w, a...)
-	n += x
-	if err != nil {
-		return n, err
-	}
-
-	x, err = FAttrOff(w, attr)
-	n += x
-	return n, err
-}
-
-func Fprintln(w io.Writer, attr Attribute, a ...interface{}) (n int, err error) {
-	x, err := FAttrOn(w, attr)
-	n += x
-	if err != nil {
-		return n, err
-	}
-
-	x, err = fmt.Fprintln(w, a...)
-	n += x
-	if err != nil {
-		return n, err
-	}
-
-	x, err = FAttrOff(w, attr)
-	n += x
-	return n, err
-}
-
-func Fprintf(w io.Writer, attr Attribute, format string, a ...interface{}) (n int, err error) {
-	x, err := FAttrOn(w, attr)
-	n += x
-	if err != nil {
-		return n, err
-	}
-
-	x, err = fmt.Fprintf(w, format, a...)
-	n += x
-	if err != nil {
-		return n, err
-	}
-
-	x, err = FAttrOff(w, attr)
-	n += x
-	return n, err
 }
 
 func Sprint(attr Attribute, a ...interface{}) (s string) {
@@ -233,4 +149,58 @@ func Sprintln(attr Attribute, a ...interface{}) (s string) {
 
 func Sprintf(attr Attribute, format string, a ...interface{}) (s string) {
 	return SAttrOn(attr) + fmt.Sprintf(format, a...) + SAttrOff(attr)
+}
+
+func Print(attr Attribute, a ...interface{}) (n int, err error) {
+	if UseMutex {
+		Mutex.Lock()
+		defer Mutex.Unlock()
+	}
+
+	return fmt.Print(Sprint(attr, a...))
+}
+
+func Println(attr Attribute, a ...interface{}) (n int, err error) {
+	if UseMutex {
+		Mutex.Lock()
+		defer Mutex.Unlock()
+	}
+
+	return fmt.Print(Sprintln(attr, a...))
+}
+
+func Printf(attr Attribute, format string, a ...interface{}) (n int, err error) {
+	if UseMutex {
+		Mutex.Lock()
+		defer Mutex.Unlock()
+	}
+
+	return fmt.Print(Sprintf(attr, format, a...))
+}
+
+func Fprint(w io.Writer, attr Attribute, a ...interface{}) (n int, err error) {
+	if UseMutex {
+		Mutex.Lock()
+		defer Mutex.Unlock()
+	}
+
+	return fmt.Fprint(w, Sprint(attr, a...))
+}
+
+func Fprintln(w io.Writer, attr Attribute, a ...interface{}) (n int, err error) {
+	if UseMutex {
+		Mutex.Lock()
+		defer Mutex.Unlock()
+	}
+
+	return fmt.Fprint(w, Sprintln(attr, a...))
+}
+
+func Fprintf(w io.Writer, attr Attribute, format string, a ...interface{}) (n int, err error) {
+	if UseMutex {
+		Mutex.Lock()
+		defer Mutex.Unlock()
+	}
+
+	return fmt.Fprint(w, Sprintf(attr, format, a...))
 }
