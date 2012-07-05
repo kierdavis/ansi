@@ -36,23 +36,43 @@ const (
 )
 
 const (
-	None    Color = 0 // This should be black, but the default (0) needs to be "no color"
-	Red     Color = 1
-	Green   Color = 2
-	Yellow  Color = 3
-	Blue    Color = 4
-	Magenta Color = 5
-	Cyan    Color = 6
-	White   Color = 7
-	Black   Color = 8 // Luckily, color % 8 will turn this 8 into a 0 correctly
+	ColorNone    Color = 0 // This should be black, but the default (0) needs to be "no color"
+	ColorRed     Color = 1
+	ColorGreen   Color = 2
+	ColorYellow  Color = 3
+	ColorBlue    Color = 4
+	ColorMagenta Color = 5
+	ColorCyan    Color = 6
+	ColorWhite   Color = 7
+	ColorBlack   Color = 8 // Luckily, color % 8 will turn this 8 into a 0 correctly
+)
+
+var (
+	Red     = Attribute{FG: ColorRed}
+	Green   = Attribute{FG: ColorGreen}
+	Yellow  = Attribute{FG: ColorYellow}
+	Blue    = Attribute{FG: ColorBlue}
+	Magenta = Attribute{FG: ColorMagenta}
+	Cyan    = Attribute{FG: ColorCyan}
+	White   = Attribute{FG: ColorWhite}
+	Black   = Attribute{FG: ColorBlack}
+
+	RedBold     = Attribute{FG: ColorRed, Attr: Bold}
+	GreenBold   = Attribute{FG: ColorGreen, Attr: Bold}
+	YellowBold  = Attribute{FG: ColorYellow, Attr: Bold}
+	BlueBold    = Attribute{FG: ColorBlue, Attr: Bold}
+	MagentaBold = Attribute{FG: ColorMagenta, Attr: Bold}
+	CyanBold    = Attribute{FG: ColorCyan, Attr: Bold}
+	WhiteBold   = Attribute{FG: ColorWhite, Attr: Bold}
+	BlackBold   = Attribute{FG: ColorBlack, Attr: Bold}
 )
 
 func SAttrOn(attr Attribute) (s string) {
-	if attr.FG != None {
+	if attr.FG != ColorNone {
 		s += fmt.Sprintf("\x1b[3%dm", attr.FG%8)
 	}
 
-	if attr.BG != None {
+	if attr.BG != ColorNone {
 		s += fmt.Sprintf("\x1b[4%dm", attr.BG%8)
 	}
 
@@ -94,11 +114,11 @@ func AttrOn(attr Attribute) (n int, err error) {
 }
 
 func SAttrOff(attr Attribute) (s string) {
-	if attr.FG != None {
+	if attr.FG != ColorNone {
 		s += "\x1b[39m"
 	}
 
-	if attr.BG != None {
+	if attr.BG != ColorNone {
 		s += "\x1b[49m"
 	}
 
