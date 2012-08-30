@@ -28,6 +28,8 @@ type Attribute struct {
 	BG   Color
 }
 
+const CSI = "\x1b["
+
 const (
 	Bold uint = 1 << iota
 	Underline
@@ -115,27 +117,27 @@ func AttrOn(attr Attribute) (n int, err error) {
 
 func SAttrOff(attr Attribute) (s string) {
 	if attr.FG != ColorNone {
-		s += "\x1b[39m"
+		s += CSI + "39m"
 	}
 
 	if attr.BG != ColorNone {
-		s += "\x1b[49m"
+		s += CSI + "49m"
 	}
 
 	if attr.Attr&Bold != 0 {
-		s += "\x1b[22m"
+		s += CSI + "22m"
 	}
 
 	if attr.Attr&Underline != 0 {
-		s += "\x1b[24m"
+		s += CSI + "24m"
 	}
 
 	if attr.Attr&Blink != 0 {
-		s += "\x1b[25m"
+		s += CSI + "25m"
 	}
 
 	if attr.Attr&Inverse != 0 {
-		s += "\x1b[27m"
+		s += CSI + "27m"
 	}
 
 	return s
@@ -223,4 +225,84 @@ func Fprintf(w io.Writer, attr Attribute, format string, a ...interface{}) (n in
 	}
 
 	return fmt.Fprint(w, Sprintf(attr, format, a...))
+}
+
+func CursorUp(lines int) {
+	fmt.Printf("%s%dA", CSI, lines)
+}
+
+func CursorDown(lines int) {
+	fmt.Printf("%s%dB", CSI, lines)
+}
+
+func CursorForward(cols int) {
+	fmt.Printf("%s%dC", CSI, cols)
+}
+
+func CursorBack(cols int) {
+	fmt.Printf("%s%dD", CSI, cols)
+}
+
+func CursorNextLine(lines int) {
+	fmt.Printf("%s%dE", CSI, lines)
+}
+
+func CursorPrevLine(lines int) {
+	fmt.Printf("%s%dF", CSI, lines)
+}
+
+func CursorHozPosition(column int) {
+	fmt.Printf("%s%dG", CSI, column)
+}
+
+func CursorPosition(row int, column int) {
+	fmt.Printf("%s%d;%dH", CSI, row, column)
+}
+
+func ClearToEndOfScreen() {
+	fmt.Printf("%s0J", CSI)
+}
+
+func ClearToStartOfScreen() {
+	fmt.Printf("%s1J", CSI)
+}
+
+func ClearScreen() {
+	fmt.Printf("%s2J", CSI)
+}
+
+func ClearToEndOfLine() {
+	fmt.Printf("%s0K", CSI)
+}
+
+func ClearToStartOfLine() {
+	fmt.Printf("%s1K", CSI)
+}
+
+func ClearLine() {
+	fmt.Printf("%s2K", CSI)
+}
+
+func ScrollUp(lines int) {
+	fmt.Printf("%s%dS", CSI, lines)
+}
+
+func ScrollDown(lines int) {
+	fmt.Printf("%s%dT", CSI, lines)
+}
+
+func SavePosition() {
+	fmt.Printf("%ss", CSI)
+}
+
+func RestorePosition() {
+	fmt.Printf("%su", CSI)
+}
+
+func HideCursor() {
+	fmt.Printf("%s?25l", CSI)
+}
+
+func ShowCursor() {
+	fmt.Printf("%s?25h", CSI)
 }
